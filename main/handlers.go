@@ -22,18 +22,12 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	description := r.Form.Get("description")
 	tags := r.Form.Get("tags")
 
-	//fmt.Println(product_id, description, tags)
-	//fmt.Printf("product ID: %v\ndescription: %v\ntags: %v", product_id, description, tags)
 	if err != nil {
 		fmt.Println("Upload file key not found:", err)
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	defer file.Close()
-
-	//fmt.Printf("file name: %v", header.Filename)
-	//fmt.Printf("file Size: %v", header.Size)
-	//fmt.Printf("file Header: %v", header.Header)
 
 	// 2- Create temp file on server
 	outFile, PathErr := os.CreateTemp(uploadDir, "*.mp4")
@@ -45,7 +39,6 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	// 3- COPY File to server
 	io.Copy(outFile, file)
-	//fmt.Print(outFile.Name())
 
 	go ProcessUploadFile(video{Product_id: product_id, Description: description, Tags: tags, Path: outFile.Name(), FileSize: header.Size})
 	w.WriteHeader(http.StatusCreated)
@@ -53,18 +46,8 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func ProcessUploadFile(vid video) {
-	//	Process file
-	//	save its meta data inti DB
-	//"ffmpeg -i 32.mp4 -profile:v baseline -level 3.0 -s 640x360 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls index.m3u8"
-	//fmt.Print(vid.Path)
 	dirName := strings.TrimSuffix(filepath.Base(vid.Path), filepath.Ext(vid.Path))
-	//fmt.Println(dirName)
-	//dirName = dirName[7:]
-	//fmt.Println(dirName)
-
-	//fmt.Println("ONLY DIR NAME", dirName, "===")
 	newDir := videoRenderingDir + "/" + dirName
-	//fmt.Println("NEW DIR:", newDir, ":::END")
 	_, dirCreationErr := exec.Command("mkdir", newDir).Output()
 
 	if dirCreationErr != nil {
@@ -78,7 +61,6 @@ func ProcessUploadFile(vid video) {
 	}
 }
 
-//224728450
 func StreamM3U8(w http.ResponseWriter, r *http.Request) {
 	id, idErr := mux.Vars(r)["id"]
 	if !idErr {

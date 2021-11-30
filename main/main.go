@@ -7,15 +7,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//COMAND FFMPEG
-//ffmpeg -i 32.mp4 -profile:v baseline -level 3.0 -s 640x360 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls index.m3u8
-//http://localhost:8080/32/index.m3u8
-
 const (
 	uploadDir         string = "/home/ali/go/src/Media_Streaming_API_Swipe_Shop/main/media/uploads"
 	videoRenderingDir string = "/home/ali/go/src/Media_Streaming_API_Swipe_Shop/main/media/videos"
 	Addr              string = ":8080"
-	//conversionCommand string = "ffmpeg -i 32.mp4 -profile:v baseline -level 3.0 -s 640x360 -start_number 0 -hls_time 10 -hls_list_size 0 -f hls index.m3u8"
 )
 
 func main() {
