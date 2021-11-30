@@ -9,17 +9,30 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
-// addHeaders will act as middleware to give us CORS support
 func addHeaders(h http.Handler) http.HandlerFunc {
-	fmt.Println("view vide called")
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		h.ServeHTTP(w, r)
 	}
 }
 
+/*
+// addHeaders will act as middleware to give us CORS support
+func addHeaders() http.HandlerFunc {
+	fmt.Println("view vide called")
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		id := mux.Vars(r)["id"]
+		h := http.FileServer(http.Dir(videoRenderingDir + "/upload-" + id))
+		h.ServeHTTP(w, r)
+	}
+}
+*/
 //ERROR HANDLE IF FILE OR DECSCRIPTION NOT FOUND
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 
@@ -76,4 +89,12 @@ func ProcessUploadFile(vid video) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func renderVideo(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("INNN...")
+	id := mux.Vars(r)["id"]
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	h := http.FileServer(http.Dir(videoRenderingDir + "/upload-" + id))
+	h.ServeHTTP(w, r)
 }
