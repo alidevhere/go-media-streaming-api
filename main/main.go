@@ -20,6 +20,9 @@ func main() {
 	router.HandleFunc("/upload-video", UploadFile).Methods("POST")
 	router.HandleFunc("/video/{id:[0-9]+}", StreamM3U8)
 	router.HandleFunc("/video/{id:[0-9]+}/{segNo:index[0-9]+.ts}", StreamTS)
+	// Router for serving complete directory of HLS files
+	router.HandleFunc("/video/{id:[0-9]+}/stream", addHeaders())
+
 	// ===	Serving 	===
 	fmt.Printf("Starting server on %v\n", Addr)
 	server := &http.Server{Addr: Addr, Handler: router}

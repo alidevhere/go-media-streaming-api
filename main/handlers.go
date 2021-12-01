@@ -81,7 +81,30 @@ func StreamTS(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	fmt.Printf("id:%s   seg: %s", id, segNo)
 	tsPath := fmt.Sprintf("%s/%s/%s", videoRenderingDir, id, segNo)
 	http.ServeFile(w, r, tsPath)
+}
+
+func RenderVideoHLS() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id, idErr := vars["id"]
+		if !idErr {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		Path := fmt.Sprintf("%s/%s", videoRenderingDir, id)
+		http.FileServer(http.Dir(Path))
+
+	}
+}
+
+func addHeaders() http.HandlerFunc {
+	fmt.Println("view vide called")
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		id := mux.Vars(r)["id"]
+		h := http.FileServer(http.Dir(videoRenderingDir + "/" + id))
+		h.ServeHTTP(w, r)
+	}
 }
