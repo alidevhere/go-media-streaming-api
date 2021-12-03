@@ -94,17 +94,31 @@ func RenderVideoHLS() http.HandlerFunc {
 			return
 		}
 		Path := fmt.Sprintf("%s/%s", videoRenderingDir, id)
-		http.FileServer(http.Dir(Path))
+		h := http.FileServer(http.Dir(Path))
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		h.ServeHTTP(w, r)
 
 	}
 }
 
-func addHeaders() http.HandlerFunc {
-	fmt.Println("view vide called")
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		id := mux.Vars(r)["id"]
-		h := http.FileServer(http.Dir(videoRenderingDir + "/" + id))
-		h.ServeHTTP(w, r)
+func StreamHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id, idErr := vars["id"]
+	if !idErr {
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+
+	segNo, segErr := vars["segNo"]
+	if !segErr {
+		Path := fmt.Sprintf("%s/%s/index.m3u8", videoRenderingDir, id)
+		http.ServeFile(w, r, Path)
+		w.Header().Set("content-Type", "application/x-mpegURL")
+	} else {
+		Path := fmt.Sprintf("%s/%s/%s", videoRenderingDir, id, segNo)
+		http.ServeFile(w, r, Path)
+		w.Header().Set("content-Type", "video/MP2T")
+	}
+
 }
