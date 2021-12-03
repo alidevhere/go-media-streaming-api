@@ -1,5 +1,5 @@
 {
-    "uploadDir":"/home/ali/go/src/Media_Streaming_API_Swipe_Shop/main/media/uploads",
-    "renderDir":"/home/ali/go/src/Media_Streaming_API_Swipe_Shop/main/media/videos",
+    "uploadDir":"/home/ali/go/src/Media_Streaming_API_Swipe_Shop/media/uploads",
+    "renderDir":"/home/ali/go/src/Media_Streaming_API_Swipe_Shop/media/videos/3234457591",
     "Addr": ":8080"
 }
