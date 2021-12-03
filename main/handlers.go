@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 //ERROR HANDLE IF FILE OR DECSCRIPTION NOT FOUND
@@ -30,9 +28,9 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// 2- Create temp file on server
-	outFile, PathErr := os.CreateTemp(uploadDir, "*.mp4")
+	outFile, PathErr := os.CreateTemp(Configurations.UploadDir, "*.mp4")
 	if PathErr != nil {
-		fmt.Println("Temporary file creation path not found", err.Error())
+		log.Fatal("Temporary file creation path not found", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	defer outFile.Close()
@@ -47,7 +45,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 
 func ProcessUploadFile(vid video) {
 	dirName := strings.TrimSuffix(filepath.Base(vid.Path), filepath.Ext(vid.Path))
-	newDir := videoRenderingDir + "/" + dirName
+	newDir := Configurations.RenderDir + "/" + dirName
 	_, dirCreationErr := exec.Command("mkdir", newDir).Output()
 
 	if dirCreationErr != nil {
@@ -59,66 +57,4 @@ func ProcessUploadFile(vid video) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func StreamM3U8(w http.ResponseWriter, r *http.Request) {
-	id, idErr := mux.Vars(r)["id"]
-	if !idErr {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	//0-Base dir for .m3u8 and .ts files of id
-	m3u8Path := fmt.Sprintf("%s/%s/index.m3u8", videoRenderingDir, id)
-	http.ServeFile(w, r, m3u8Path)
-}
-
-func StreamTS(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	id, idErr := vars["id"]
-	segNo, segErr := vars["segNo"]
-	if !idErr || !segErr {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	tsPath := fmt.Sprintf("%s/%s/%s", videoRenderingDir, id, segNo)
-	http.ServeFile(w, r, tsPath)
-}
-
-func RenderVideoHLS() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		id, idErr := vars["id"]
-		if !idErr {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		Path := fmt.Sprintf("%s/%s", videoRenderingDir, id)
-		h := http.FileServer(http.Dir(Path))
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		h.ServeHTTP(w, r)
-
-	}
-}
-
-func StreamHandler(w http.ResponseWriter, r *http.Request) {
-
-	vars := mux.Vars(r)
-	id, idErr := vars["id"]
-	if !idErr {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	segNo, segErr := vars["segNo"]
-	if !segErr {
-		Path := fmt.Sprintf("%s/%s/index.m3u8", videoRenderingDir, id)
-		http.ServeFile(w, r, Path)
-		w.Header().Set("content-Type", "application/x-mpegURL")
-	} else {
-		Path := fmt.Sprintf("%s/%s/%s", videoRenderingDir, id, segNo)
-		http.ServeFile(w, r, Path)
-		w.Header().Set("content-Type", "video/MP2T")
-	}
-
 }
